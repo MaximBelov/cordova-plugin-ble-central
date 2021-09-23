@@ -127,8 +127,14 @@ public class Peripheral extends BluetoothGattCallback {
             gatt.close();
             gatt = null;
         }
+
         queueCleanup();
         callbackCleanup();
+
+        if(connectCallback != null){
+            connectCallback.error(this.asJSONObject("Peripheral disconnected: disconnect"));
+        }
+
     }
 
     // the peripheral disconnected
@@ -153,7 +159,7 @@ public class Peripheral extends BluetoothGattCallback {
     // notify the phone that the peripheral disconnected
     private void sendDisconnectMessage() {
         if (connectCallback != null) {
-            JSONObject message = this.asJSONObject("Peripheral Disconnected");
+            JSONObject message = this.asJSONObject("Peripheral Disconnected: sendDisconnectMessage");
             if (autoconnect) {
                 PluginResult result = new PluginResult(PluginResult.Status.ERROR, message);
                 result.setKeepCallback(true);
@@ -584,7 +590,12 @@ public class Peripheral extends BluetoothGattCallback {
 
         String key = generateHashKey(serviceUUID, characteristic);
 
-        notificationCallbacks.remove(key);
+        if (characteristic != null) {
+
+            SequentialCallbackContext notificationCallback = notificationCallbacks.get(key);
+            notificationCallback.getCallContext().sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
+            notificationCallbacks.remove(key);
+        }
 
         if (gatt.setCharacteristicNotification(characteristic, false)) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
@@ -828,7 +839,7 @@ public class Peripheral extends BluetoothGattCallback {
     public void queueCleanup() {
         bleProcessing.set(true); // Stop anything else trying to process
         for (BLECommand command = commandQueue.poll(); command != null; command = commandQueue.poll()) {
-            command.getCallbackContext().error("Peripheral Disconnected");
+            command.getCallbackContext().error("Peripheral Disconnected: queueCleanup");
         }
         bleProcessing.set(false); // Now re-allow processing
     }
@@ -836,12 +847,12 @@ public class Peripheral extends BluetoothGattCallback {
     private void callbackCleanup() {
         synchronized(this) {
             if (readCallback != null) {
-                readCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                readCallback.error(this.asJSONObject("Peripheral Disconnected: callbackCleanup:readCallback"));
                 readCallback = null;
                 commandCompleted();
             }
             if (writeCallback != null) {
-                writeCallback.error(this.asJSONObject("Peripheral Disconnected"));
+                writeCallback.error(this.asJSONObject("Peripheral Disconnected: callbackCleanup:writeCallback"));
                 writeCallback = null;
                 commandCompleted();
             }
