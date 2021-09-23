@@ -52,4 +52,8 @@ public class SequentialCallbackContext {
 
         this.context.sendPluginResult(result);
     }
+
+    public CallbackContext getCallContext(){
+        return this.context;
+    }
 }
