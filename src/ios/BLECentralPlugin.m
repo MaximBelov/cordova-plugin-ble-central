@@ -120,6 +120,9 @@
 
     } else {
 
+        NSString *connectCallbackId = [connectCallbacks valueForKey:uuid];
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"] callbackId:connectCallbackId];
+
         [connectCallbacks removeObjectForKey:uuid];
         [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
 
@@ -321,6 +324,11 @@
     [manager stopScan];
 
     if (discoverPeripheralCallbackId) {
+        CDVPluginResult *pluginResult = [CDVPluginResult
+                                         resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"Discover peripheral callback removed"];
+        [pluginResult setKeepCallbackAsBool:false];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:discoverPeripheralCallbackId];
         discoverPeripheralCallbackId = nil;
     }
 
@@ -334,7 +342,7 @@
     CBPeripheral *peripheral = [self findPeripheralByUUID:[command argumentAtIndex:0]];
 
     if (peripheral && peripheral.state == CBPeripheralStateConnected) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:true];
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Not connected"];
     }
@@ -511,6 +519,12 @@
     NSString *connectCallbackId = [connectCallbacks valueForKey:[peripheral uuidAsString]];
     [connectCallbacks removeObjectForKey:[peripheral uuidAsString]];
     [self cleanupOperationCallbacks:peripheral withResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Peripheral disconnected"]];
+
+//    CBPeripheral *peripheralForRemove = [self findPeripheralByUUID:[peripheral uuidAsString]];
+//    if(peripheral){
+//        [peripherals removeObject:peripheralForRemove];
+//        NSLog(@"%@",peripherals);
+//    }
 
     if (connectCallbackId) {
 
