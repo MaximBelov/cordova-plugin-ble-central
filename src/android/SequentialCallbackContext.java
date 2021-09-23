@@ -55,6 +55,10 @@ public class SequentialCallbackContext {
         this.context.sendPluginResult(result);
     }
 
+    public CallbackContext getCallContext(){
+        return this.context;
+    }
+
     public boolean completeSubscription(int status) {
         if (subscribed) {
             return true;

@@ -129,6 +129,10 @@ public class Peripheral extends BluetoothGattCallback {
         closeGatt();
         queueCleanup("Central disconnected");
         callbackCleanup("Central disconnected");
+
+        if(connectCallback != null){
+            connectCallback.error(this.asJSONObject("Peripheral disconnected: disconnect"));
+        }
     }
 
     // the peripheral disconnected
@@ -625,7 +629,11 @@ public class Peripheral extends BluetoothGattCallback {
 
         String key = generateHashKey(serviceUUID, characteristic);
 
-        notificationCallbacks.remove(key);
+        if (characteristic != null) {
+            SequentialCallbackContext notificationCallback = notificationCallbacks.get(key);
+            notificationCallback.getCallContext().sendPluginResult(new PluginResult(PluginResult.Status.OK, true));
+            notificationCallbacks.remove(key);
+        }
 
         if (gatt.setCharacteristicNotification(characteristic, false)) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIGURATION_UUID);
