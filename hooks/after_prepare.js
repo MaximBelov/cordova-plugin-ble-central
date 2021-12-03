@@ -3,7 +3,7 @@
 
 var fs = require('fs');
 
-var ACCESS_BACKGROUND_LOCATION_PERMISSION = '<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />';
+var ACCESS_BACKGROUND_LOCATION_PERMISSION = '<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>';
 
 module.exports = function (context) {
     const accessBackgroundLocationVariable = getAccessBackgroundLocationVariable();
@@ -87,13 +87,13 @@ var accessBackgroundLocationExists = function (manifest) {
 
 var addAccessBackgroundLocationToManifest = function (manifestPath, androidManifest) {
     const index = androidManifest.search('</manifest>');
-    const accessBackgroundLocationPermissionLine = '    ' + ACCESS_BACKGROUND_LOCATION_PERMISSION + '\n';
+    const accessBackgroundLocationPermissionLine = '  ' + ACCESS_BACKGROUND_LOCATION_PERMISSION + '\n';
     const updatedManifest = androidManifest.substring(0, index) + accessBackgroundLocationPermissionLine + androidManifest.substring(index);
     fs.writeFileSync(manifestPath, updatedManifest);
 }
 
 var removeAccessBackgroundLocationToManifest = function (manifestPath, androidManifest) {
-    const accessBackgroundLocationPermissionLine = '    ' + ACCESS_BACKGROUND_LOCATION_PERMISSION + '\n';
+    const accessBackgroundLocationPermissionLine = '  ' + ACCESS_BACKGROUND_LOCATION_PERMISSION + '\n';
     const updatedManifest = androidManifest.replace(accessBackgroundLocationPermissionLine, '');
     fs.writeFileSync(manifestPath, updatedManifest);
 }
